@@ -1,0 +1,152 @@
+project:
+  name: bayesian-retail-forecasting
+  output_root: outputs
+  data_root: data
+  log_level: INFO
+  timezone: Europe/Vilnius
+
+data:
+  dataset: synthetic
+  raw_root: data/raw
+  interim_root: data/interim
+  processed_root: data/processed
+  max_series: 200
+  minimum_history: 180
+  train_fraction: 0.70
+  validation_fraction: 0.10
+  test_fraction: 0.20
+  history_length:
+    m5: 90
+    favorita: 120
+    synthetic: 60
+  forecast_horizon: 28
+
+features:
+  autoregressive_order: 7
+  explicit_lags: [1, 7, 14, 28, 56, 90]
+  rolling_windows: [7, 14, 28, 56]
+  ewm_spans: [7, 14, 28]
+  seasonal_periods: [7, 30, 365]
+  fourier_harmonics: 4
+  spline_degree: 3
+  spline_knots: 5
+  spline_covariates: [price, transactions, oil_price]
+  continuous_covariates: [price, transactions, oil_price]
+  binary_covariates: [promotion, holiday, snap]
+  future_known_covariates:
+    - promotion
+    - holiday
+    - snap
+    - day_of_week
+    - month
+    - quarter
+    - weekend
+  interactions:
+    - [promotion, holiday]
+    - [promotion, price]
+    - [promotion, transactions]
+    - [holiday, weekend]
+    - [price_change_pct, promotion]
+  include_rolling_statistics: true
+  include_ewm_statistics: true
+  include_growth_features: true
+  include_price_features: true
+  include_promotion_features: true
+  include_holiday_distance: true
+  include_transaction_features: true
+  include_oil_features: true
+  drop_rows_without_required_lags: true
+  window_stride: 1
+
+model:
+  likelihood: negative_binomial
+  include_global_effect: true
+  include_series_effect: true
+  include_category_effect: true
+  include_store_effect: true
+  include_region_effect: true
+  include_category_store_interaction: true
+  include_dataset_effect: true
+  include_autoregression: true
+  include_fourier_seasonality: true
+  include_latent_trend: true
+  include_linear_covariates: true
+  include_spline_covariates: true
+  include_covariate_interactions: true
+  local_dispersion: true
+  priors:
+    global_intercept_scale: 2.0
+    hierarchy_scale: 1.0
+    regression_scale: 0.5
+    interaction_scale: 0.2
+    trend_scale: 0.2
+    dispersion_scale: 5.0
+
+inference:
+  engine: pymc
+  method: nuts
+  draws: 500
+  tune: 500
+  chains: 2
+  cores: 2
+  target_accept: 0.90
+  max_treedepth: 12
+  progressbar: true
+  save_log_likelihood: true
+  advi_iterations: 30000
+  advi_learning_rate: 0.01
+  posterior_predictive_draws: 1000
+  monitored_variables:
+    - alpha_global
+    - sigma_series
+    - sigma_item
+    - sigma_department
+    - sigma_category
+    - sigma_store
+    - sigma_region
+    - sigma_dataset
+    - sigma_category_store
+    - dispersion_global
+
+experiment:
+  seeds: [11, 22, 33]
+  interval_levels: [0.50, 0.80, 0.95]
+  hierarchy_levels: [item, category, department, store, region, overall]
+  scalability_series_counts: [100, 250, 500, 1000, 2500, 5000]
+
+
+baselines:
+  common:
+    batch_size: 64
+    epochs: 50
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    patience: 8
+    gradient_clip: 1.0
+    num_workers: 0
+    device: auto
+    mixed_precision: true
+    checkpoint_metric: validation_loss
+    samples: 500
+  prophet:
+    yearly_seasonality: auto
+    weekly_seasonality: true
+    daily_seasonality: false
+    seasonality_mode: additive
+    interval_width: 0.95
+    changepoint_prior_scale: 0.05
+    seasonality_prior_scale: 10.0
+    holidays_prior_scale: 10.0
+  deepar:
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.1
+    embedding_size: 16
+    distribution: negative_binomial
+  nbeats:
+    stack_types: [trend, seasonality, generic]
+    blocks_per_stack: 3
+    hidden_size: 256
+    layers: 4
+    theta_size: 64
+    dropout: 0.1

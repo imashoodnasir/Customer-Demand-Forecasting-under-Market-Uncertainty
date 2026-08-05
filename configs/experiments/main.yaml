@@ -1,0 +1,16 @@
+datasets:
+  - m5
+  - favorita
+
+seeds:
+  - 11
+  - 22
+  - 33
+
+models:
+  - bayesian
+  - prophet
+  - deepar
+  - nbeats
+  - tft
+  - patchtst

@@ -1,0 +1,15 @@
+datasets:
+  - m5
+  - favorita
+
+seeds:
+  - 11
+  - 22
+  - 33
+
+metrics:
+  - RMSE
+  - MAE
+  - WRMSSE
+  - CRPS
+  - sMAPE

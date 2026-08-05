@@ -1,0 +1,10 @@
+model:
+  hidden_size: 128
+  lstm_layers: 1
+  attention_heads: 4
+  quantiles: [0.1,0.5,0.9]
+
+training:
+  batch_size: 128
+  learning_rate: 0.0005
+  epochs: 100
