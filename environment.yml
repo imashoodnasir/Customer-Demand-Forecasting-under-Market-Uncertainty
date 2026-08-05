@@ -1,0 +1,16 @@
+name: bayesian-retail
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - pyyaml
+  - pip
+  - pip:
+      - torch
+      - pymc
+      - arviz
+      - pytest

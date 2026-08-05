@@ -1,0 +1,5 @@
+services:
+  bayesian-retail:
+    build: .
+    volumes:
+      - .:/workspace
